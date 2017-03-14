@@ -1,6 +1,5 @@
 #include "arbitrage.h"
 #include <cmath>
-#include <fstream>
 
 using namespace std;
 
@@ -99,11 +98,6 @@ QVector<double> Arbitrage::removeArbitrage(){
     ans[3] = currentX.cP();
     ans[4] = currentY.cP();
 
-    ofstream out;
-    out.open("../../../../testPlot/boundary.out");
-    for(QVector<Coordinate>::iterator it = boundary.begin() ; it != boundary.end() ; it++){
-        out << it->getX() << "   " << it->getY() << endl;
-    }
     return jwToRaw(ans);
 }
 

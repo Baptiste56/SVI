@@ -16,6 +16,7 @@ DialogRange::DialogRange(QWidget *parent) :
     range2.push_back(1.5);
     range2.push_back(-0.2);
     range2.push_back(1.4);
+    t = 1.0;
     QObject::connect(ui->doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setRange0(double)));
     QObject::connect(ui->doubleSpinBox_2, SIGNAL(valueChanged(double)), this, SLOT(setRange1(double)));
     QObject::connect(ui->doubleSpinBox_3, SIGNAL(valueChanged(double)), this, SLOT(setRange2(double)));
@@ -24,6 +25,7 @@ DialogRange::DialogRange(QWidget *parent) :
     QObject::connect(ui->doubleSpinBox2_2, SIGNAL(valueChanged(double)), this, SLOT(setRange1_2(double)));
     QObject::connect(ui->doubleSpinBox2_3, SIGNAL(valueChanged(double)), this, SLOT(setRange2_2(double)));
     QObject::connect(ui->doubleSpinBox2_4, SIGNAL(valueChanged(double)), this, SLOT(setRange3_2(double)));
+    QObject::connect(ui->doubleSpinBox_t, SIGNAL(valueChanged(double)), this, SLOT(setT(double)));
 }
 
 QVector<double> DialogRange::getRange(){
@@ -32,6 +34,10 @@ QVector<double> DialogRange::getRange(){
 
 QVector<double> DialogRange::getRange2(){
     return range2;
+}
+
+double DialogRange::getT(){
+    return t;
 }
 
 void DialogRange::setRange(int pos, double val){
@@ -72,6 +78,10 @@ void DialogRange::setRange2_2(double val){
 
 void DialogRange::setRange3_2(double val){
     setRange2(3,val);
+}
+
+void DialogRange::setT(double t){
+    this->t = t;
 }
 
 DialogRange::~DialogRange()

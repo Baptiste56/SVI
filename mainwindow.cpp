@@ -78,21 +78,28 @@ MainWindow::MainWindow(QWidget *parent) :
 }
 
 void MainWindow::showDataSet(){
-    Calibrate file("../../../../testPlot/data.in");
+    Calibrate file(this, mod);
     addSampleData(&file);
 }
 
 void MainWindow::setRange(){
     bool res = diag->exec();
     if(res){
+        mod->setT(diag->getT());
+
         QVector<double> range = diag->getRange();
         ui->plot->xAxis->setRange(range[0], range[1]);
         ui->plot->yAxis->setRange(range[2], range[3]);
-        ui->plot->replot();
 
         QVector<double> range2 = diag->getRange2();
         ui->plot2->xAxis->setRange(range2[0], range2[1]);
         ui->plot2->yAxis->setRange(range2[2], range2[3]);
+
+        y = mod->getY();
+        g = mod->getG();
+        ui->plot->graph(0)->setData(x, y);
+        ui->plot2->graph(0)->setData(x,g);
+        ui->plot->replot();
         ui->plot2->replot();
     }
 }
@@ -117,9 +124,9 @@ void MainWindow::setInitialCurve(){
 }
 
 void MainWindow::calibrateCurve(){
-    Calibrate file("../../../../testPlot/data.in");
+    Calibrate file(this, mod);
     addSampleData(&file);
-    QVector<double> newCoef = file.calibrating(mod);
+    QVector<double> newCoef = file.calibrating();
     mod->setCoef(newCoef[0],newCoef[1],newCoef[2],newCoef[3],newCoef[4]);
 
     mod->setData();

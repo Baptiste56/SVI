@@ -29,6 +29,7 @@ public:
     void setCoef(double a, double b, double ro, double m, double sig);
     void setParam(QString name);
     void setInitCurve(double u, double v, double u2, double v2);
+    void setT(double t);
 
     /*** Param changes ***/
     void changeDataA(double delta, int sp);

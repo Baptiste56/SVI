@@ -2,6 +2,7 @@
 #define CALIBRATE_H
 
 #include <QVector>
+#include <QMainWindow>
 
 #include "svimodel.h"
 #include <boost/numeric/ublas/matrix.hpp>
@@ -13,9 +14,10 @@ class Calibrate
 {
 public:
     Calibrate();
-    Calibrate(string name);
+    Calibrate(QMainWindow* main, SVIModel* mod);
 
-    QVector<double> calibrating(SVIModel* mod);
+    QVector<double> calibrating();
+    QVector<double> calibrating(bool ro_slope);
     template<class T> bool InvertMatrix(const matrix<T>& input, matrix<T>& inverse);
 
     QVector<double> getDataX();
@@ -23,6 +25,9 @@ public:
 
 private:
     int n;
+    SVIModel* mod;
+    QVector<double> volX;
+    QVector<double> volY;
     QVector<double> dataX;
     QVector<double> dataY;
 };

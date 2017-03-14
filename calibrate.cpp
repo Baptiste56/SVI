@@ -1,6 +1,8 @@
 #include "calibrate.h"
+#include "mainwindow.h"
 #include <iostream>
 #include <fstream>
+#include <QFileDialog>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/numeric/ublas/lu.hpp>
@@ -13,28 +15,39 @@ Calibrate::Calibrate()
 
 }
 
-Calibrate::Calibrate(string fileName){
+Calibrate::Calibrate(QMainWindow *main, SVIModel *mod){
+    this->mod = mod;
     ifstream file;
+    QString fileNameQt = QFileDialog::getOpenFileName(main, "Open a file", QString("../../../../testPlot/data"));
+    string fileName = fileNameQt.toStdString();
     file.open(fileName);
     if(file.is_open()){
         while(!file.eof()){
             double temp;
             file >> temp;
-            dataX.push_back(temp);
+            volX.push_back(temp);
             file >> temp;
-            dataY.push_back(temp);
+            volY.push_back(temp);
         }
-        dataX.pop_back();
-        dataY.pop_back();
+        volX.pop_back();
+        volY.pop_back();
     }
     else{
         cout << "Unable to open file" << endl;
     }
-    n = dataX.size();
+    n = volX.size();
+    double t = mod->getT();
+
+    /*** Transform Volatility in Total Variance ***/
+    for(int i = 0 ; i < n ; i++){
+        dataY.push_back(t*pow(volY[i],2));
+        dataX.push_back(volX[i]);
+    }
+
     file.close();
 }
 
-QVector<double> Calibrate::calibrating(SVIModel *mod){
+QVector<double> Calibrate::calibrating(){
     ofstream out;
     out.open("../../../../testPlot/console.out");
 
@@ -47,6 +60,7 @@ QVector<double> Calibrate::calibrating(SVIModel *mod){
     matrix<double> r (n,1);
     matrix<double> ans (5,1);
     QVector<double> param;
+
     param.fill(0,5);
     ans(0,0) = a;
     ans(1,0) = b;
@@ -67,13 +81,10 @@ QVector<double> Calibrate::calibrating(SVIModel *mod){
         }
         matrix<double> res(5,5);
         matrix<double> temp2 = prod(trans(J),J);
-        out << temp2 << endl;
         bool cond = InvertMatrix(temp2,res);
         if(cond){
             matrix<double> temp3 = prod(trans(J),r);
             matrix<double> temp4 = prod(res,temp3);
-            out << temp4 << endl;
-            out << ans << endl;
             ans = ans - temp4;
             param[0] = ans(0,0);
             param[1] = ans(1,0);
@@ -92,6 +103,78 @@ QVector<double> Calibrate::calibrating(SVIModel *mod){
         }
         it++;
     }
+    for(int i = 0 ; i < 5 ; i++){
+        out << param[i] << endl;
+    }
+
+    return param;
+}
+
+QVector<double> Calibrate::calibrating(bool ro_slope){
+    ofstream out;
+    out.open("../../../../testPlot/console.out");
+
+    double ro(0);
+    if(ro_slope){
+        ro = 1;
+    }
+    else{
+        ro = -1;
+    }
+
+    double a = mod->getA();
+    double b = mod->getB();
+    double m = mod->getM();
+    double sig = mod->getSig();
+    matrix<double> J (n,4);
+    matrix<double> r (n,1);
+    matrix<double> ans (5,1);
+    QVector<double> param;
+
+    param.fill(0,5);
+    param[2] = ro;
+
+    ans(0,0) = a;
+    ans(1,0) = b;
+    ans(2,0) = m;
+    ans(3,0) = sig;
+    int it = 0;
+    while(it < 1){
+        for(int i = 0 ; i<n ; i++){
+            double temp = sqrt(pow(dataX[i]-m,2)+pow(sig,2));
+            J(i,0) = 1;    // param a
+            J(i,1) = ro*(dataX[i]-m)+temp;   // param b
+            J(i,2) = (-b)*(ro + ((dataX[i]-m)/temp));    //param m
+            J(i,3) = b*sig/temp;   // param sig
+            double f = a + b*(ro*(dataX[i]-m)+temp);
+            r(i,0) = f - dataY[i];
+        }
+        matrix<double> res(4,4);
+        matrix<double> temp2 = prod(trans(J),J);
+        bool cond = InvertMatrix(temp2,res);
+        if(cond){
+            matrix<double> temp3 = prod(trans(J),r);
+            matrix<double> temp4 = prod(res,temp3);
+            ans = ans - temp4;
+            param[0] = ans(0,0);
+            param[1] = ans(1,0);
+            param[3] = ans(2,0);
+            param[4] = ans(3,0);
+            a = ans(0,0);
+            b = ans(1,0);
+            m = ans(3,0);
+            sig = ans(4,0);
+
+        }
+        else{
+            out << "problem inverting at step " << it << endl;
+        }
+        it++;
+    }
+    for(int i = 0 ; i < 5 ; i++){
+        out << param[i] << endl;
+    }
+
     return param;
 }
 
