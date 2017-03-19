@@ -25,6 +25,7 @@ SVIModel::SVIModel(double a, double b, double ro, double m, double sig){
     param = "raw";
     for (int i=0; i<101; ++i)
     {
+      //x[i] = i/25.0 - 2;   //CHANGE HERE
       x[i] = i/100.0 - 0.5; // x goes from -0.5 to 0.5
     }
     setData();

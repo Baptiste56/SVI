@@ -19,8 +19,38 @@ Calibrate::Calibrate(QMainWindow *main, SVIModel *mod){
     this->mod = mod;
     ifstream file;
     QString fileNameQt = QFileDialog::getOpenFileName(main, "Open a file", QString("../../../../testPlot/data"));
-    string fileName = fileNameQt.toStdString();
+    fileName = fileNameQt.toStdString();
     file.open(fileName);
+    if(file.is_open()){
+        while(!file.eof()){
+            double temp;
+            file >> temp;
+            volX.push_back(temp);
+            file >> temp;
+            volY.push_back(temp);
+        }
+        volX.pop_back();
+        volY.pop_back();
+    }
+    else{
+        cout << "Unable to open file" << endl;
+    }
+    n = volX.size();
+    double t = mod->getT();
+
+    /*** Transform Volatility in Total Variance ***/
+    for(int i = 0 ; i < n ; i++){
+        dataY.push_back(t*pow(volY[i],2));
+        dataX.push_back(volX[i]);
+    }
+
+    file.close();
+}
+
+Calibrate::Calibrate(string fileName2, SVIModel* mod){
+    this->mod = mod;
+    ifstream file;
+    file.open(fileName2);
     if(file.is_open()){
         while(!file.eof()){
             double temp;
@@ -213,4 +243,8 @@ QVector<double> Calibrate::getDataX(){
 
 QVector<double> Calibrate::getDataY(){
     return dataY;
+}
+
+string Calibrate::getFileName(){
+    return fileName;
 }

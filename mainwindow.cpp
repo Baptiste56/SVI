@@ -16,6 +16,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     diag = new DialogRange(this);
 
+    fileName = "none";
+
     x.fill(0,101);
     y.fill(0,101);
     g.fill(0,101);
@@ -80,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::showDataSet(){
     Calibrate file(this, mod);
     addSampleData(&file);
+    fileName = file.getFileName();
 }
 
 void MainWindow::setRange(){
@@ -124,19 +127,36 @@ void MainWindow::setInitialCurve(){
 }
 
 void MainWindow::calibrateCurve(){
-    Calibrate file(this, mod);
-    addSampleData(&file);
-    QVector<double> newCoef = file.calibrating();
-    mod->setCoef(newCoef[0],newCoef[1],newCoef[2],newCoef[3],newCoef[4]);
+    if(fileName == "none"){
+        Calibrate file(this, mod);
+        addSampleData(&file);
+        QVector<double> newCoef = file.calibrating();
+        mod->setCoef(newCoef[0],newCoef[1],newCoef[2],newCoef[3],newCoef[4]);
 
-    mod->setData();
-    y = mod->getY();
-    g = mod->getG();
-    ui->plot->graph(0)->setData(x, y);
-    ui->plot2->graph(0)->setData(x,g);
-    ui->plot->replot();
-    ui->plot2->replot();
-    displayParam();
+        mod->setData();
+        y = mod->getY();
+        g = mod->getG();
+        ui->plot->graph(0)->setData(x, y);
+        ui->plot2->graph(0)->setData(x,g);
+        ui->plot->replot();
+        ui->plot2->replot();
+        displayParam();
+    }
+    else{
+        Calibrate file(fileName, mod);
+        addSampleData(&file);
+        QVector<double> newCoef = file.calibrating();
+        mod->setCoef(newCoef[0],newCoef[1],newCoef[2],newCoef[3],newCoef[4]);
+
+        mod->setData();
+        y = mod->getY();
+        g = mod->getG();
+        ui->plot->graph(0)->setData(x, y);
+        ui->plot2->graph(0)->setData(x,g);
+        ui->plot->replot();
+        ui->plot2->replot();
+        displayParam();
+    }
 }
 
 void MainWindow::removeArbitrage(){
@@ -212,7 +232,7 @@ void MainWindow::changeParam(QString name){
 }
 
 void MainWindow::changeCurve1(int coef){
-    double delta = (double)coef/speedChange;
+    double delta = (double)coef/(10*speedChange);
     mod->changeDataA(delta, speedChange);
     if(mod->getParam() == "raw"){
         ui->param1->display(mod->getA());

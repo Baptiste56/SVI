@@ -15,6 +15,7 @@ class Calibrate
 public:
     Calibrate();
     Calibrate(QMainWindow* main, SVIModel* mod);
+    Calibrate(string fileName, SVIModel* mod);
 
     QVector<double> calibrating();
     QVector<double> calibrating(bool ro_slope);
@@ -22,6 +23,7 @@ public:
 
     QVector<double> getDataX();
     QVector<double> getDataY();
+    string getFileName();
 
 private:
     int n;
@@ -30,6 +32,7 @@ private:
     QVector<double> volY;
     QVector<double> dataX;
     QVector<double> dataY;
+    string fileName;
 };
 
 #endif // CALIBRATE_H

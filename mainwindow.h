@@ -45,6 +45,7 @@ class MainWindow : public QMainWindow
     QVector<double> g;
     QVector<double> lastRange;
     int speedChange;
+    std::string fileName;
 };
 
 #endif // MAINWINDOW_H
